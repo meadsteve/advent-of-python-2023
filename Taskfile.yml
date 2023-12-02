@@ -1,0 +1,32 @@
+# https://taskfile.dev
+
+version: '3'
+
+env:
+  PYTHONPATH: ./src
+
+tasks:
+  format:
+    cmds:
+      - black src
+    silent: true
+  test:
+    cmds:
+      - task: test:pytest
+      - task: test:mypy
+      - task: test:format
+  test:pytest:
+    sources:
+      - src/**/*.*
+    cmds:
+      - pytest src
+  test:format:
+    sources:
+      - src/**/*.*
+    cmds:
+      - black --check src
+  test:mypy:
+    sources:
+      - src/**/*.*
+    cmds:
+      - mypy src
