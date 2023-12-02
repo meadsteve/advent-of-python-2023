@@ -1,4 +1,9 @@
-from .part_one import find_first_number, find_last_number, number_for_input, solve_part_one
+from .part_one import (
+    find_first_number,
+    find_last_number,
+    number_for_input,
+    solve_part_one,
+)
 
 
 def test_finds_the_first_number():
