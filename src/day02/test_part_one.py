@@ -1,4 +1,11 @@
-from day02.part_one import Color, Draw, parse_line, biggest_draw_possible, Game, solve_part_one
+from day02.part_one_and_two import (
+    Color,
+    Draw,
+    parse_line,
+    biggest_draw_possible,
+    Game,
+    solve_part_one,
+)
 
 
 def test_a_draw_can_be_parsed():

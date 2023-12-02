@@ -24,6 +24,13 @@ class Game:
     def is_possible_from(self, cube_collection: CubeCollection) -> bool:
         return biggest_draw_possible(self.draws).is_possible_from(cube_collection)
 
+    @property
+    def power(self) -> int:
+        x = 1
+        for _, y in biggest_draw_possible(self.draws).cubes.items():
+            x = x * y
+        return x
+
 
 @dataclasses.dataclass
 class Draw:
@@ -71,3 +78,9 @@ def solve_part_one() -> int:
         if game.is_possible_from({Color.red: 12, Color.green: 13, Color.blue: 14})
     )
     return sum(game.game_id for game in possible_games)
+
+
+def solve_part_two() -> int:
+    lines = read_lines("./src/day02/input.txt")
+    games = (parse_line(line) for line in lines)
+    return sum(game.power for game in games)
