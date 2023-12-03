@@ -1,3 +1,4 @@
+from common import read_lines
 from day03.part_one import Grid, get_neighbours, parse_schematic, Schematic
 
 
@@ -64,3 +65,13 @@ def test_a_schema_can_return_the_part_ids_next_to_a_symbol():
     schematic = parse_schematic(["123*....", ".....456"])
 
     assert schematic.get_part_ids_next_to_symbol() == {123}
+
+
+def solve_part_one() -> int:
+    lines = read_lines("./src/day03/input.txt")
+    schema = parse_schematic(lines)
+    return sum(schema.get_part_ids_next_to_symbol())
+
+
+def test_it_can_solve_part_one():
+    assert solve_part_one() == 0
