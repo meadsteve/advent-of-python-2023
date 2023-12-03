@@ -1,5 +1,4 @@
-from common import read_lines
-from day03.part_one import Grid, get_neighbours, parse_schematic, Schematic
+from day03.part_one import Grid, get_neighbours, parse_schematic, Schematic, solve_part_one
 
 
 def test_all_neighbours_can_be_loaded_for_a_position():
@@ -58,20 +57,20 @@ def test_part_location_ids_get_parsed_into_the_scheme():
 def test_a_schema_can_return_the_part_ids_next_to_a_symbol_when_there_are_none():
     schematic = parse_schematic(["123...", "...456"])
 
-    assert schematic.get_part_ids_next_to_symbol() == set()
+    assert schematic.get_part_ids_next_to_symbol() == []
 
 
 def test_a_schema_can_return_the_part_ids_next_to_a_symbol():
     schematic = parse_schematic(["123*....", ".....456"])
 
-    assert schematic.get_part_ids_next_to_symbol() == {123}
+    assert schematic.get_part_ids_next_to_symbol() == [123]
 
 
-def solve_part_one() -> int:
-    lines = read_lines("./src/day03/input.txt")
-    schema = parse_schematic(lines)
-    return sum(schema.get_part_ids_next_to_symbol())
+def test_a_schema_can_return_the_part_ids_next_to_a_symbol_when_there_are_dupes():
+    schematic = parse_schematic(["123*....", "....*123"])
+
+    assert schematic.get_part_ids_next_to_symbol() == [123, 123]
 
 
 def test_it_can_solve_part_one():
-    assert solve_part_one() == 0
+    assert solve_part_one() == 553825

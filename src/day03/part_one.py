@@ -1,6 +1,8 @@
 import dataclasses
 from typing import Iterator, Sequence, Mapping, Iterable
 
+from common import read_lines
+
 SchematicCell = int | str
 Grid = Sequence[Sequence[SchematicCell]]
 Position = tuple[int, int]
@@ -22,8 +24,8 @@ class Schematic:
     grid: Grid
     part_lookup: Mapping[PartLocationId, PartNumber]
 
-    def get_part_ids_next_to_symbol(self) -> set[int]:
-        results = set()
+    def get_part_ids_next_to_symbol(self) -> list[int]:
+        part_location_ids = set()
         for y in range(0, len(self.grid)):
             for x in range(0, len(self.grid[0])):
                 piece = self.grid[y][x]
@@ -31,8 +33,8 @@ class Schematic:
                     neighbours = get_neighbours(self.grid, (x, y))
                     for neighbour in neighbours:
                         if isinstance(neighbour, int) and neighbour in self.part_lookup:
-                            results.add(self.part_lookup[neighbour])
-        return results
+                            part_location_ids.add(neighbour)
+        return [self.part_lookup[location_id] for location_id in part_location_ids]
 
 
 def parse_schematic(lines: Iterable[str]) -> Schematic:
@@ -72,3 +74,9 @@ def get_neighbours(grid: Grid, position: Position) -> Iterator[SchematicCell]:
             if x < 0 or y < 0 or y >= len(grid) or x >= len(grid[y]):
                 continue
             yield grid[y][x]
+
+
+def solve_part_one() -> int:
+    lines = read_lines("./src/day03/input.txt")
+    schema = parse_schematic(lines)
+    return sum(schema.get_part_ids_next_to_symbol())
