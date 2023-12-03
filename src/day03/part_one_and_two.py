@@ -18,26 +18,27 @@ class Schematic:
 
     def get_part_ids_next_to_symbol(self) -> list[int]:
         part_location_ids = set()
-        for piece, position in self._pieces():
-            if is_symbol(piece):
-                neighbours = get_neighbours(self.grid, position)
-                for neighbour in neighbours:
-                    if isinstance(neighbour, int) and neighbour in self.part_lookup:
-                        part_location_ids.add(neighbour)
+        for piece, position in self._pieces(pick_if=is_symbol):
+            neighbours = get_neighbours(self.grid, position)
+            for neighbour in neighbours:
+                if isinstance(neighbour, int) and neighbour in self.part_lookup:
+                    part_location_ids.add(neighbour)
         return [self.part_lookup[location_id] for location_id in part_location_ids]
 
     def get_gears(self) -> Iterable[tuple[int, int]]:
-        for piece, position in self._pieces():
-            if is_gear_symbol(piece):
-                part_number_neighbours = get_part_number_neighbours(self.grid, position)
-                if len(part_number_neighbours) == 2:
-                    yield tuple(self.part_lookup[x] for x in part_number_neighbours)  # type: ignore
+        for piece, position in self._pieces(pick_if=is_gear_symbol):
+            part_number_neighbours = get_part_number_neighbours(self.grid, position)
+            if len(part_number_neighbours) == 2:
+                yield tuple(self.part_lookup[x] for x in part_number_neighbours)  # type: ignore
 
-    def _pieces(self) -> Iterable[tuple[SchematicCell, Position]]:
+    def _pieces(
+        self, *, pick_if=lambda piece: True
+    ) -> Iterable[tuple[SchematicCell, Position]]:
         for y in range(0, len(self.grid)):
             for x in range(0, len(self.grid[0])):
                 piece = self.grid[y][x]
-                yield piece, (x, y)
+                if pick_if(piece):
+                    yield piece, (x, y)
 
 
 def is_symbol(piece: SchematicCell):

@@ -1,4 +1,9 @@
-from day03.part_one_and_two import Grid, get_part_number_neighbours, parse_schematic, solve_part_two
+from day03.part_one_and_two import (
+    Grid,
+    get_part_number_neighbours,
+    parse_schematic,
+    solve_part_two,
+)
 
 
 def test_the_number_of_part_number_neighbours_can_be_counted():
@@ -24,4 +29,4 @@ def test_it_finds_all_the_gear_ratios():
 
 
 def test_it_can_solve_part_two():
-    assert solve_part_two() == 553825
+    assert solve_part_two() == 93994191
