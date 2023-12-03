@@ -1,14 +1,15 @@
 import dataclasses
-from typing import Iterator, Sequence, Mapping, Iterable
+from typing import Iterator, Sequence, Mapping, Iterable, TypeGuard
 
 from common import read_lines
 
-SchematicCell = int | str
-Grid = Sequence[Sequence[SchematicCell]]
-Position = tuple[int, int]
-
 PartLocationId = int
 PartNumber = int
+Symbol = str
+
+SchematicCell = PartLocationId | Symbol
+Grid = Sequence[Sequence[SchematicCell]]
+Position = tuple[int, int]
 
 
 @dataclasses.dataclass
@@ -16,16 +17,16 @@ class Schematic:
     grid: Grid
     part_lookup: Mapping[PartLocationId, PartNumber]
 
-    def get_part_ids_next_to_symbol(self) -> list[int]:
-        part_location_ids = set()
+    def get_part_numbers_next_to_symbol(self) -> list[PartNumber]:
+        part_location_ids: set[PartLocationId] = set()
         for piece, position in self._pieces(pick_if=is_symbol):
             neighbours = get_neighbours(self.grid, position)
             for neighbour in neighbours:
-                if isinstance(neighbour, int) and neighbour in self.part_lookup:
+                if is_part_location(neighbour) and neighbour in self.part_lookup:
                     part_location_ids.add(neighbour)
         return [self.part_lookup[location_id] for location_id in part_location_ids]
 
-    def get_gears(self) -> Iterable[tuple[int, int]]:
+    def get_gears(self) -> Iterable[tuple[PartNumber, PartNumber]]:
         for piece, position in self._pieces(pick_if=is_gear_symbol):
             part_number_neighbours = get_part_number_neighbours(self.grid, position)
             if len(part_number_neighbours) == 2:
@@ -41,16 +42,20 @@ class Schematic:
                     yield piece, (x, y)
 
 
-def is_symbol(piece: SchematicCell):
-    if isinstance(piece, int):
+def is_symbol(piece: SchematicCell) -> TypeGuard[Symbol]:
+    if isinstance(piece, PartLocationId):
         return False
     if piece == ".":
         return False
     return True
 
 
-def is_gear_symbol(piece: SchematicCell):
+def is_gear_symbol(piece: SchematicCell) -> TypeGuard[Symbol]:
     return piece == "*"
+
+
+def is_part_location(piece: SchematicCell) -> TypeGuard[PartLocationId]:
+    return isinstance(piece, PartLocationId)
 
 
 def parse_schematic(lines: Iterable[str]) -> Schematic:
@@ -58,7 +63,7 @@ def parse_schematic(lines: Iterable[str]) -> Schematic:
     part_lookup = {}
     current_part_location = 0
     for line in lines:
-        grid_row: list[str | int] = []
+        grid_row: list[SchematicCell] = []
         current_part_number = ""
         for char in line:
             if char.isdigit():
@@ -92,15 +97,17 @@ def get_neighbours(grid: Grid, position: Position) -> Iterator[SchematicCell]:
             yield grid[y][x]
 
 
-def get_part_number_neighbours(grid: Grid, position: Position) -> set[int]:
+def get_part_number_neighbours(grid: Grid, position: Position) -> set[PartLocationId]:
     neighbours = get_neighbours(grid, position)
-    return set(neighbour for neighbour in neighbours if isinstance(neighbour, int))
+    return set(
+        neighbour for neighbour in neighbours if isinstance(neighbour, PartLocationId)
+    )
 
 
 def solve_part_one() -> int:
     lines = read_lines("./src/day03/input.txt")
     schema = parse_schematic(lines)
-    return sum(schema.get_part_ids_next_to_symbol())
+    return sum(schema.get_part_numbers_next_to_symbol())
 
 
 def solve_part_two() -> int:
