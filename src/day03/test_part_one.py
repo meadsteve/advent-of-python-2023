@@ -1,4 +1,10 @@
-from day03.part_one import Grid, get_neighbours, parse_schematic, Schematic, solve_part_one
+from day03.part_one_and_two import (
+    Grid,
+    get_neighbours,
+    parse_schematic,
+    Schematic,
+    solve_part_one,
+)
 
 
 def test_all_neighbours_can_be_loaded_for_a_position():
