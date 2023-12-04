@@ -11,7 +11,8 @@ class Row:
     card_id: int
     numbers: NumberCollection
     winning_numbers: NumberCollection
-    _winning_set: set[int]
+    score: int
+    number_of_matches: int
 
     def __init__(
         self,
@@ -23,14 +24,13 @@ class Row:
         self.card_id = card_id
         self.numbers = numbers
         self.winning_numbers = winning_numbers
-        self._winning_set = set(winning_numbers)
 
-    @property
-    def score(self) -> int:
-        number_matches = sum(1 for n in self.numbers if n in self._winning_set)
-        if number_matches == 0:
-            return 0
-        return 2 ** (number_matches - 1)
+        # Pre-calc some stuff
+        _winning_set = set(winning_numbers)
+        self.number_of_matches = sum(1 for n in self.numbers if n in _winning_set)
+        self.score = (
+            2 ** (self.number_of_matches - 1) if self.number_of_matches > 0 else 0
+        )
 
 
 def parse_row(row: str) -> Row:
