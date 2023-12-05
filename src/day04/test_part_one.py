@@ -1,6 +1,6 @@
 import pytest
 
-from day04.part_one import Row, parse_row, solve_part_one
+from day04.part_one_and_two import Row, parse_row, solve_part_one
 
 
 def test_it_can_parse_a_row():
