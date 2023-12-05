@@ -1,6 +1,6 @@
 import dataclasses
 import re
-from typing import Sequence, Protocol, Mapping
+from typing import Sequence, Protocol, Mapping, Iterable
 
 from common import blocks_by_blank_line, read_lines
 
@@ -80,7 +80,7 @@ class Mapper(MappingFunction):
 class MappingCollection:
     _mappers: Mapping[str, MappingFunction]
 
-    def __init__(self, mappers: Sequence[MappingFunction]):
+    def __init__(self, mappers: Iterable[MappingFunction]):
         self._mappers = {mapper.source: mapper for mapper in mappers}
 
     def get_mapper_between(self, source: str, destination: str) -> MappingFunction:
@@ -91,12 +91,12 @@ class MappingCollection:
 
 
 def solve_part_one_for_file(file_path: str) -> int:
-    blocks = list(blocks_by_blank_line(read_lines(file_path)))
-    [[seed_line], *mapper_blocks] = blocks
+    blocks = blocks_by_blank_line(read_lines(file_path))
 
-    mappers = MappingCollection([Mapper(m) for m in mapper_blocks])
-    seeds = [int(s) for s in seed_line.split(" ")[1:]]
+    [seed_line] = next(blocks)
+    seeds = (int(s) for s in seed_line.split(" ")[1:])
 
+    mappers = MappingCollection(Mapper(m) for m in blocks)
     mapper = mappers.get_mapper_between("seed", "location")
 
     return min(mapper(s) for s in seeds)
