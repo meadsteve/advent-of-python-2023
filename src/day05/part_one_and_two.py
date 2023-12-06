@@ -2,7 +2,6 @@ from __future__ import annotations
 import dataclasses
 import itertools
 import re
-from concurrent.futures import ProcessPoolExecutor
 from typing import Sequence, Protocol, Mapping, Iterable
 
 from common import blocks_by_blank_line, read_lines, IntRange
@@ -174,10 +173,13 @@ def solve_part_two_for_file(file_path: str) -> int:
     mapper, seeds = _mapper_and_seeds(file_path)
 
     seed_range_min_maxes = [
-       IntRange(start=start, stop=start + delta + 1) for (start, delta) in itertools.batched(seeds, 2)
+        IntRange(start=start, stop=start + delta + 1)
+        for (start, delta) in itertools.batched(seeds, 2)
     ]
 
-    results = sorted(list(mapper.apply_for_range(seed_range_min_maxes)), key=lambda r: r.start)
+    results = sorted(
+        list(mapper.apply_for_range(seed_range_min_maxes)), key=lambda r: r.start
+    )
 
     return results[0].start
 
@@ -197,4 +199,3 @@ def solve_part_one():
 
 def solve_part_two():
     return solve_part_two_for_file("./src/day05/input.txt")
-
