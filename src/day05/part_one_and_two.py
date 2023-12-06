@@ -5,7 +5,7 @@ import re
 from concurrent.futures import ProcessPoolExecutor
 from typing import Sequence, Protocol, Mapping, Iterable
 
-from common import blocks_by_blank_line, read_lines
+from common import blocks_by_blank_line, read_lines, IntRange
 
 MAX_INT_TO_TRY = 100_000_000_000_000
 
@@ -13,7 +13,7 @@ mapper_definition = re.compile(r"([a-z]+)-to-([a-z]+) map:")
 
 
 @dataclasses.dataclass
-class Range:
+class MappedRange:
     source_start: int
     source_end: int
     delta: int
@@ -41,6 +41,9 @@ class MappingFunction(Protocol):
     def __call__(self, value: int) -> int:
         pass
 
+    def apply_for_range(self, ranges: Iterable[IntRange]) -> Iterable[IntRange]:
+        pass
+
     def reverse(self) -> MappingFunction:
         pass
 
@@ -65,17 +68,24 @@ class ChainedMapper(MappingFunction):
     def reverse(self) -> ChainedMapper:
         return ChainedMapper(self._second.reverse(), self._first.reverse())
 
+    def apply_for_range(self, ranges: Iterable[IntRange]) -> Iterable[IntRange]:
+        first = self._first
+        second = self._second
+        return second.apply_for_range(first.apply_for_range(ranges))
+
 
 class Mapper(MappingFunction):
     source: str
     destination: str
 
-    _mappings: Sequence[Range]
+    _mappings: Sequence[MappedRange]
 
-    def __init__(self, *, source: str, destination: str, mappings: Sequence[Range]):
+    def __init__(
+        self, *, source: str, destination: str, mappings: Sequence[MappedRange]
+    ):
         self.source = source
         self.destination = destination
-        self._mappings = mappings
+        self._mappings = sorted(mappings, key=lambda m: m.source_start)
 
     @classmethod
     def from_text(cls, lines: Sequence[str]):
@@ -86,8 +96,40 @@ class Mapper(MappingFunction):
         return Mapper(
             source=definition.group(1),
             destination=definition.group(2),
-            mappings=[Range.from_string(mapping) for mapping in mapping_values],
+            mappings=[MappedRange.from_string(mapping) for mapping in mapping_values],
         )
+
+    def apply_for_range(self, ranges: Iterable[IntRange]) -> Iterable[IntRange]:
+        for input_range in ranges:
+            lower = input_range.start
+            upper = input_range.stop - 1
+            for mapping in self._mappings:
+                if upper < mapping.source_start:
+                    yield IntRange(start=lower, stop=upper + 1)
+                    lower = upper + 1
+                    break
+                if mapping.contains(lower) and mapping.contains(upper):
+                    yield IntRange(
+                        start=lower + mapping.delta, stop=upper + mapping.delta + 1
+                    )
+                    lower = upper + 1
+                    break
+                if mapping.contains(upper):
+                    yield IntRange(start=lower, stop=mapping.source_start)
+                    yield IntRange(
+                        start=mapping.source_start + mapping.delta,
+                        stop=upper + mapping.delta,
+                    )
+                    lower = upper + 1
+                    break
+                if mapping.contains(lower):
+                    yield IntRange(
+                        start=lower + mapping.delta,
+                        stop=mapping.source_end + mapping.delta + 1,
+                    )
+                    lower = mapping.source_end + 1
+            if lower <= upper:
+                yield IntRange(start=lower, stop=upper + 1)
 
     def __call__(self, value: int) -> int:
         for mapping in self._mappings:
@@ -97,7 +139,7 @@ class Mapper(MappingFunction):
 
     def reverse(self) -> Mapper:
         reversed_mappings = [
-            Range(
+            MappedRange(
                 source_start=old_range.source_start + old_range.delta,
                 source_end=old_range.source_end + old_range.delta,
                 delta=-old_range.delta,
@@ -128,41 +170,16 @@ def solve_part_one_for_file(file_path: str) -> int:
     return min(mapper(s) for s in seeds)
 
 
-def solve_part_two_for_file(file_path: str, *, batch_size: int = 1000) -> int | None:
+def solve_part_two_for_file(file_path: str) -> int:
     mapper, seeds = _mapper_and_seeds(file_path)
-    reversed_mapper = mapper.reverse()
 
     seed_range_min_maxes = [
-        (start, start + delta) for (start, delta) in itertools.batched(seeds, 2)
+       IntRange(start=start, stop=start + delta + 1) for (start, delta) in itertools.batched(seeds, 2)
     ]
 
-    location_validator = _LocationValidator(reversed_mapper, seed_range_min_maxes)
+    results = sorted(list(mapper.apply_for_range(seed_range_min_maxes)), key=lambda r: r.start)
 
-    with ProcessPoolExecutor() as executor:
-        for possible_minimums in itertools.batched(
-            range(0, MAX_INT_TO_TRY), batch_size
-        ):
-            print(f"Trying: {possible_minimums[0]}")
-            results = executor.map(location_validator, possible_minimums)
-            non_null_results = [r for r in results if r is not None]
-            if len(non_null_results) > 0:
-                return min(non_null_results)
-    print(f"No value found under {MAX_INT_TO_TRY}")
-    return None
-
-
-@dataclasses.dataclass
-class _LocationValidator:
-    reversed_mapper: MappingFunction
-    seed_range_min_maxes: list[tuple[int, int]]
-
-    def __call__(self, possible_minimum):
-        possible_seed = self.reversed_mapper(possible_minimum)
-
-        for start, end in self.seed_range_min_maxes:
-            if start <= possible_seed <= end:
-                return possible_minimum
-        return None
+    return results[0].start
 
 
 def _mapper_and_seeds(file_path):
@@ -181,6 +198,3 @@ def solve_part_one():
 def solve_part_two():
     return solve_part_two_for_file("./src/day05/input.txt")
 
-
-if __name__ == "__main__":
-    print(solve_part_two())
