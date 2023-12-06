@@ -1,4 +1,4 @@
-from day06.part_one import RaceData, winning_acceleration_times, solve_part_one
+from day06.part_one_and_two import RaceData, winning_acceleration_times, solve_part_one
 
 
 def test_it_calculates_the_winning_values():

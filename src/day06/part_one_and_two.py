@@ -43,16 +43,28 @@ def _validate_answer(acceleration_time: int, race: RaceData):
 # TODO: use human hands to update input if it changes
 # Time:        41     66     72     66
 # Distance:   244   1047   1228   1040
-input_data: Collection[RaceData] = (
+input_data_part_one: Collection[RaceData] = (
     RaceData(time_allowed=41, distance_record=244),
     RaceData(time_allowed=66, distance_record=1047),
     RaceData(time_allowed=72, distance_record=1228),
     RaceData(time_allowed=66, distance_record=1040),
 )
 
+input_data_part_two: Collection[RaceData] = (
+    RaceData(time_allowed=41667266, distance_record=244104712281040),
+)
+
 
 def solve_part_one() -> int:
+    return _ways_of_winning_races(input_data_part_one)
+
+
+def solve_part_two() -> int:
+    return _ways_of_winning_races(input_data_part_two)
+
+
+def _ways_of_winning_races(races: Iterable[RaceData]):
     winning_options = (
-        iterator_length(winning_acceleration_times(race)) for race in input_data
+        iterator_length(winning_acceleration_times(race)) for race in races
     )
     return multiply_together(winning_options)
