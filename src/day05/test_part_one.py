@@ -1,4 +1,4 @@
-from day05.part_one import (
+from day05.part_one_and_two import (
     Mapper,
     ChainedMapper,
     MappingCollection,
@@ -9,13 +9,13 @@ from day05.part_one import (
 
 def test_a_mapper_can_be_built_from_text():
     lines = ["seed-to-soil map:", "50 98 2", "52 50 48"]
-    mapper = Mapper(lines)
+    mapper = Mapper.from_text(lines)
     assert mapper.source == "seed"
     assert mapper.destination == "soil"
 
 
 def test_a_mapper_uses_the_explicitly_defined_maps():
-    mapper = Mapper(["seed-to-soil map:", "50 98 2", "52 50 48"])
+    mapper = Mapper.from_text(["seed-to-soil map:", "50 98 2", "52 50 48"])
 
     assert mapper(98) == 50
     assert mapper(99) == 51
@@ -25,15 +25,17 @@ def test_a_mapper_uses_the_explicitly_defined_maps():
 
 
 def test_a_mapper_leaves_the_value_unchanged_if_not_defined():
-    mapper = Mapper(["seed-to-soil map:", "50 98 2", "52 50 48"])
+    mapper = Mapper.from_text(["seed-to-soil map:", "50 98 2", "52 50 48"])
 
     assert mapper(100) == 100
     assert mapper(49) == 49
 
 
 def test_two_mapping_functions_can_be_chained_together():
-    mapper_one = Mapper(["seed-to-soil map:", "50 98 2", "52 50 48"])
-    mapper_two = Mapper(["soil-to-fertilizer map:", "0 15 37", "37 52 2", "39 0 15"])
+    mapper_one = Mapper.from_text(["seed-to-soil map:", "50 98 2", "52 50 48"])
+    mapper_two = Mapper.from_text(
+        ["soil-to-fertilizer map:", "0 15 37", "37 52 2", "39 0 15"]
+    )
     mapper = ChainedMapper(mapper_one, mapper_two)
 
     assert mapper.source == "seed"
@@ -46,8 +48,10 @@ def test_two_mapping_functions_can_be_chained_together():
 def test_a_mapping_collection_can_give_the_correct_mappings():
     mapping_collection = MappingCollection(
         [
-            Mapper(["seed-to-soil map:", "50 98 2", "52 50 48"]),
-            Mapper(["soil-to-fertilizer map:", "0 15 37", "37 52 2", "39 0 15"]),
+            Mapper.from_text(["seed-to-soil map:", "50 98 2", "52 50 48"]),
+            Mapper.from_text(
+                ["soil-to-fertilizer map:", "0 15 37", "37 52 2", "39 0 15"]
+            ),
         ]
     )
     mapper = mapping_collection.get_mapper_between("seed", "fertilizer")
