@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+import dataclasses
 import functools
 from typing import Iterable, overload
 
@@ -35,3 +38,19 @@ def multiply_together(ns: Iterable):
 
 def iterator_length(ns: Iterable) -> int:
     return sum(1 for _ in ns)
+
+
+@dataclasses.dataclass
+class IntRange(Iterable[int]):
+    start: int
+    stop: int
+
+    def __iter__(self):
+        return iter(range(self.start, self.stop))
+
+    def __len__(self) -> int:
+        return self.stop - self.start
+
+    @classmethod
+    def empty(cls) -> IntRange:
+        return IntRange(start=0, stop=0)

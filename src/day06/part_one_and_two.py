@@ -1,8 +1,9 @@
+from __future__ import annotations
 import dataclasses
 import math
 from typing import Collection, Iterable
 
-from common import multiply_together, iterator_length
+from common import multiply_together, IntRange
 
 
 @dataclasses.dataclass
@@ -11,14 +12,14 @@ class RaceData:
     distance_record: int
 
 
-def winning_acceleration_times(race: RaceData) -> Iterable[int]:
+def winning_acceleration_times(race: RaceData) -> IntRange:
     winning_distance = race.distance_record + 1  # We've got to beat it by one
 
     # Thanks quadratic formula
     try:
         sqrt_part = math.sqrt((race.time_allowed**2) - (4 * winning_distance))
     except ValueError:
-        return []
+        return IntRange.empty()
     lower_bound = math.ceil((race.time_allowed - sqrt_part) / 2)
     upper_bound = math.floor((race.time_allowed + sqrt_part) / 2)
 
@@ -26,7 +27,7 @@ def winning_acceleration_times(race: RaceData) -> Iterable[int]:
     _validate_answer(lower_bound, race)
     _validate_answer(lower_bound, race)
 
-    return range(lower_bound, upper_bound + 1)
+    return IntRange(start=lower_bound, stop=upper_bound + 1)
 
 
 def _validate_answer(acceleration_time: int, race: RaceData):
@@ -64,7 +65,5 @@ def solve_part_two() -> int:
 
 
 def _ways_of_winning_races(races: Iterable[RaceData]):
-    winning_options = (
-        iterator_length(winning_acceleration_times(race)) for race in races
-    )
+    winning_options = (len(winning_acceleration_times(race)) for race in races)
     return multiply_together(winning_options)

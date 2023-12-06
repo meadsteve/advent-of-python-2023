@@ -33,7 +33,8 @@ def test_it_will_never_exceed_the_time():
 
 def test_an_impossible_race_is_just_an_empty_result():
     assert (
-        winning_acceleration_times(RaceData(time_allowed=1, distance_record=30)) == []
+        len(winning_acceleration_times(RaceData(time_allowed=1, distance_record=30)))
+        == 0
     )
 
 
