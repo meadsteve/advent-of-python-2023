@@ -1,7 +1,7 @@
 import pytest
 
 from common import read_lines
-from day07.part_one import (
+from day07.part_one_and_two import (
     Card,
     HandAndBid,
     parse,
@@ -9,7 +9,7 @@ from day07.part_one import (
     HandType,
     Hand,
     solve_part_one,
-    solve_part_one_for_file,
+    solve_for_file,
 )
 
 
@@ -118,7 +118,7 @@ def test_sorting_the_input_behaves_as_expected():
 
 
 def test_it_works_for_the_example():
-    assert solve_part_one_for_file("./src/day07/example.txt") == 6440
+    assert solve_for_file("./src/day07/example.txt") == 6440
 
 
 def test_it_can_solve_part_one():

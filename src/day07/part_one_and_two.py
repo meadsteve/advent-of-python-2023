@@ -8,6 +8,7 @@ from common import read_lines
 
 
 class Card(int, Enum):
+    joker = auto()
     two = auto()
     three = auto()
     four = auto()
@@ -23,7 +24,7 @@ class Card(int, Enum):
     A = auto()
 
     @classmethod
-    def from_string(cls, c) -> Card:
+    def from_string(cls, c, *, jokers_exist: bool = False) -> Card:
         match c:
             case "2":
                 return Card.two
@@ -44,7 +45,7 @@ class Card(int, Enum):
             case "T":
                 return Card.T
             case "J":
-                return Card.J
+                return Card.joker if jokers_exist else Card.J
             case "Q":
                 return Card.Q
             case "K":
@@ -76,6 +77,9 @@ class Hand:
     def __iter__(self):
         return iter(self._cards)
 
+    def __getitem__(self, n: int):
+        return self._cards[n]
+
     def __repr__(self):
         return f"Hand({','.join(repr(c) for c in self._cards)})"
 
@@ -103,18 +107,35 @@ class Hand:
         return False
 
     @classmethod
-    def from_string(cls, card_part: str) -> Hand:
-        return cls(*(Card.from_string(c) for c in card_part))
+    def from_string(cls, card_part: str, *, jokers_exist: bool = False) -> Hand:
+        return cls(*(Card.from_string(c, jokers_exist=jokers_exist) for c in card_part))
+
+    def with_swap(self, original: Card, new: Card) -> Hand:
+        swap_pos = self._cards.index(original)
+        return Hand(*self._cards[0:swap_pos], new, *self._cards[swap_pos + 1 :])
 
 
 def hand_type(hand: Hand) -> HandType:
     card_counts = Counter(hand)
-
     unique_card_count = len(card_counts)
-    max_duplicates = max(card_counts.values())
 
+    # Hooray the best
     if unique_card_count == 1:
         return HandType.FiveOfAKind
+
+    # It might be better with some jokers
+    if Card.joker in hand:
+        hand_options = (
+            hand.with_swap(Card.joker, card)
+            for card in card_counts.keys()
+            if card != Card.joker
+        )
+        possible_types = [hand_type(hand_option) for hand_option in hand_options]
+        return max(*possible_types) if len(possible_types) > 1 else possible_types[0]
+
+    # okay let's try the rest
+    max_duplicates = max(card_counts.values())
+
     if unique_card_count == 2 and max_duplicates == 4:
         return HandType.FourOfAKind
     if unique_card_count == 2 and max_duplicates == 3:
@@ -139,17 +160,23 @@ class HandAndBid:
         return f"{self.hand} - {self.bid}"
 
 
-def parse(line: str) -> HandAndBid:
+def parse(line: str, *, jokers_exist: bool = False) -> HandAndBid:
     card_part, raw_bid = line.split(" ")
-    return HandAndBid(hand=Hand.from_string(card_part), bid=int(raw_bid))
+    return HandAndBid(
+        hand=Hand.from_string(card_part, jokers_exist=jokers_exist), bid=int(raw_bid)
+    )
 
 
 def solve_part_one() -> int:
-    return solve_part_one_for_file("./src/day07/input.txt")
+    return solve_for_file("./src/day07/input.txt")
 
 
-def solve_part_one_for_file(file_path) -> int:
+def solve_part_two() -> int:
+    return solve_for_file("./src/day07/input.txt", jokers_exist=True)
+
+
+def solve_for_file(file_path, *, jokers_exist: bool = False) -> int:
     lines = read_lines(file_path)
-    hands = [parse(line) for line in lines]
+    hands = [parse(line, jokers_exist=jokers_exist) for line in lines]
     hands_and_rank = enumerate(sorted(hands, key=lambda h: h.hand))
     return sum((rank + 1) * hand.bid for rank, hand in hands_and_rank)
