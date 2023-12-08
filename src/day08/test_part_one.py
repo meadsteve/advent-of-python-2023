@@ -1,10 +1,11 @@
-from day08.part_one import (
+from day08.part_one_and_two import (
     Direction,
     InfiniteDirections,
     Node,
     parse,
     steps_required,
     solve_part_one,
+    NodeMap,
 )
 
 
@@ -18,10 +19,10 @@ ZZZ = (ZZZ, ZZZ)""".split(
 
     assert parse(example) == (
         InfiniteDirections(Direction.right, Direction.left),
-        {
-            "AAA": Node(label="AAA", left="ZZZ", right="ZZZ"),
-            "ZZZ": Node(label="ZZZ", left="ZZZ", right="ZZZ"),
-        },
+        NodeMap(
+            Node(label="AAA", left="ZZZ", right="ZZZ"),
+            Node(label="ZZZ", left="ZZZ", right="ZZZ"),
+        ),
     )
 
 
