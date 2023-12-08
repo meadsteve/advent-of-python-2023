@@ -1,5 +1,6 @@
 import pytest
 
+from common import read_lines
 from day07.part_one import (
     Card,
     HandAndBid,
@@ -49,8 +50,8 @@ def test_hand_sequence():
         < HandType.FullHouse
         < HandType.FourOfAKind
         < HandType.FiveOfAKind
-
     )
+
 
 @pytest.mark.parametrize(
     "hand,expected_rank",
@@ -95,10 +96,30 @@ def test_the_hands_in_the_example_can_be_sorted_as_expected():
     assert sorted([a, b, c, d, e]) == [a, d, c, b, e]
 
 
+def test_a_random_example():
+    a = Hand.from_string("23456")
+    b = Hand.from_string("34567")
+    c = Hand.from_string("45678")
+    d = Hand.from_string("56789")
+    e = Hand.from_string("A2345")
+    hand = [a, b, c, d, e]
+    sorted_hand = sorted(hand)
+    assert sorted_hand == hand
+
+
+def test_sorting_the_input_behaves_as_expected():
+    lines = read_lines("./src/day07/input.txt")
+    hands = [parse(line).hand for line in lines]
+
+    sorted_once = list(sorted(hands))
+    sorted_twice = list(sorted(sorted_once))
+
+    assert sorted_once[0:10] == sorted_twice[0:10]
+
+
 def test_it_works_for_the_example():
     assert solve_part_one_for_file("./src/day07/example.txt") == 6440
 
 
 def test_it_can_solve_part_one():
-    assert solve_part_one() != 250944320
-    assert solve_part_one() == 0
+    assert solve_part_one() == 251806792

@@ -79,9 +79,12 @@ class Hand:
     def __repr__(self):
         return f"Hand({','.join(repr(c) for c in self._cards)})"
 
+    def __str__(self):
+        return f"{hand_type(self).name} - {''.join(c.name for c in self._cards)}"
+
     def __eq__(self, other):
         if not isinstance(other, Hand):
-            return False
+            raise RuntimeError("Cant compare another object")
         return self._cards == other._cards
 
     def __lt__(self, other):
@@ -89,13 +92,15 @@ class Hand:
             raise RuntimeError("Hand can only be compared to Hand")
         self_type = hand_type(self)
         other_type = hand_type(other)
+        if self_type < other_type:
+            return True
         if self_type == other_type:
-            if self._cards == other._cards:
-                raise RuntimeError("We didn't expect fully equal hands")
             for self_card, other_card in zip(self._cards, other._cards):
                 if self_card < other_card:
                     return True
-        return self_type < other_type
+                if self_card.value > other_card:
+                    break
+        return False
 
     @classmethod
     def from_string(cls, card_part: str) -> Hand:
@@ -129,6 +134,9 @@ def hand_type(hand: Hand) -> HandType:
 class HandAndBid:
     hand: Hand
     bid: int
+
+    def __str__(self):
+        return f"{self.hand} - {self.bid}"
 
 
 def parse(line: str) -> HandAndBid:
