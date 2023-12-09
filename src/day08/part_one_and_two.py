@@ -3,9 +3,10 @@ import dataclasses
 import itertools
 from enum import Enum, auto
 from functools import cache
-from typing import Iterator, Iterable
+from typing import Iterator, Iterable, Callable
 
-from common import read_lines
+from common import read_lines, multiply_together
+from common_maths import prime_factors
 
 
 class Direction(Enum):
@@ -90,36 +91,62 @@ def parse(input_data: Iterable[str]) -> tuple[InfiniteDirections, NodeMap]:
     return InfiniteDirections(*directions), nodes
 
 
-def steps_required(directions: InfiniteDirections, node_map: NodeMap) -> int:
+def steps_required(
+    directions: InfiniteDirections,
+    node_map: NodeMap,
+    *,
+    from_start: str = "AAA",
+    end_condition: Callable[[NodeId], bool] = lambda n: n == "ZZZ",
+) -> tuple[int, NodeId]:
     steps_taken = 0
-    node = "AAA"
+    node = from_start
     for direction in directions:
         node = node_map.next_node(node, direction)
         steps_taken += 1
         if steps_taken > 9_000_000_000_000:
             raise RuntimeError("Too tired. Too many steps.")
-        if node == "ZZZ":
-            return steps_taken
+        if end_condition(node):
+            return steps_taken, node
     raise Exception("I'm not sure how we got here")
 
 
 def multiverse_steps_required(directions: InfiniteDirections, node_map: NodeMap) -> int:
-    steps_taken = 0
     nodes = [node for node in node_map.all if node.endswith("A")]
-    for direction in directions:
-        nodes = [node_map.next_node(node, direction) for node in nodes]
-        steps_taken += 1
-        if steps_taken > 9_000_000_000_000_000_000:
-            raise RuntimeError("Too tired. Too many steps.")
-        if all(node.endswith("Z") for node in nodes):
-            return steps_taken
-    raise Exception("I'm not sure how we got here")
+    first_end_met = [
+        steps_required(
+            directions,
+            node_map,
+            from_start=node,
+            end_condition=lambda n: n.endswith("Z"),
+        )
+        for node in nodes
+    ]
+    loop_lengths = [
+        steps_required(
+            directions,
+            node_map,
+            from_start=final_node,
+            end_condition=lambda n: n == final_node,
+        )
+        for _, final_node in first_end_met
+    ]
+    if not all(
+        first == loop for ((first, _), (loop, _)) in zip(first_end_met, loop_lengths)
+    ):
+        raise RuntimeError(
+            "Case where the loop isn't the same length as getting to the loop not implemented"
+        )
+    factors = []
+    for (n, _) in loop_lengths:
+        factors.extend(prime_factors(n))
+    return multiply_together(set(factors))
 
 
 def solve_part_one() -> int:
     lines = read_lines("./src/day08/input.txt")
     directions, nodes = parse(lines)
-    return steps_required(directions, nodes)
+    steps, _final_node = steps_required(directions, nodes)
+    return steps
 
 
 def solve_part_two() -> int:

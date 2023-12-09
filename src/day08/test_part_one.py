@@ -41,7 +41,7 @@ ZZZ = (ZZZ, ZZZ)""".split(
         )
     )
 
-    assert steps_required(directions, nodes) == 2
+    assert steps_required(directions, nodes) == (2, "ZZZ")
 
 
 def test_it_works_for_another_example():
@@ -55,7 +55,7 @@ ZZZ = (ZZZ, ZZZ)""".split(
         )
     )
 
-    assert steps_required(directions, nodes) == 6
+    assert steps_required(directions, nodes) == (6, "ZZZ")
 
 
 def test_it_solves_part_one():
