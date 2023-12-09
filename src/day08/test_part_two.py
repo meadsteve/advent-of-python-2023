@@ -18,3 +18,7 @@ XXX = (XXX, XXX)""".split(
     )
 
     assert multiverse_steps_required(directions, nodes) == 6
+
+
+def test_it_solves_part_two():
+    assert solve_part_two() == 8906539031197

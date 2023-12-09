@@ -1,18 +1,18 @@
 from functools import lru_cache
 
-primes: set[int] = set()
 
-
-# Thanks https://stackoverflow.com/questions/15347174/python-finding-prime-factors
+# Thanks https://stackoverflow.com/questions/16996217/prime-factorization-list
 @lru_cache(maxsize=None)
-def prime_factors(n: int):
-    if n < 2:
-        return [1]
-    prime_factors(int(n**0.5))
-
-    for prime in primes:
-        if n % prime == 0:
-            return sorted((prime, *prime_factors(n // prime)))
-
-    primes.add(n)
-    return [n]
+def prime_factors(n):
+    f, fs = 3, []
+    while n % 2 == 0:
+        fs.append(2)
+        n /= 2
+    while f * f <= n:
+        while n % f == 0:
+            fs.append(int(f))
+            n /= f
+        f += 2
+    if n > 1:
+        fs.append(int(n))
+    return fs

@@ -137,7 +137,7 @@ def multiverse_steps_required(directions: InfiniteDirections, node_map: NodeMap)
             "Case where the loop isn't the same length as getting to the loop not implemented"
         )
     factors = []
-    for (n, _) in loop_lengths:
+    for n, _ in loop_lengths:
         factors.extend(prime_factors(n))
     return multiply_together(set(factors))
 
@@ -153,7 +153,3 @@ def solve_part_two() -> int:
     lines = read_lines("./src/day08/input.txt")
     directions, nodes = parse(lines)
     return multiverse_steps_required(directions, nodes)
-
-
-if __name__ == "__main__":
-    print(solve_part_two())
