@@ -18,8 +18,22 @@ def next_number(numbers: Sequence[int]) -> int:
     return numbers[-1] + next_number(diffs)
 
 
+def previous_number(numbers: Sequence[int]) -> int:
+    diffs = difference_sequence(numbers)
+    if all_zeros(diffs):
+        return numbers[0]
+    return numbers[0] - previous_number(diffs)
+
+
 def solve_part_one() -> int:
     lines = read_lines("./src/day09/input.txt")
     sequences = (list(map(int, line.split(" "))) for line in lines)
     nexts = (next_number(sequence) for sequence in sequences)
     return sum(nexts)
+
+
+def solve_part_two() -> int:
+    lines = read_lines("./src/day09/input.txt")
+    sequences = (list(map(int, line.split(" "))) for line in lines)
+    prevs = (previous_number(sequence) for sequence in sequences)
+    return sum(prevs)
