@@ -5,8 +5,8 @@ from enum import Enum, auto
 from functools import cache
 from typing import Iterator, Iterable, Callable
 
-from common import read_lines, multiply_together
-from common_maths import prime_factors
+from common import read_lines
+from common_maths import smallest_common_multiple
 
 
 class Direction(Enum):
@@ -136,10 +136,7 @@ def multiverse_steps_required(directions: InfiniteDirections, node_map: NodeMap)
         raise RuntimeError(
             "Case where the loop isn't the same length as getting to the loop not implemented"
         )
-    factors = []
-    for n, _ in loop_lengths:
-        factors.extend(prime_factors(n))
-    return multiply_together(set(factors))
+    return smallest_common_multiple(n for n, _ in loop_lengths)
 
 
 def solve_part_one() -> int:
